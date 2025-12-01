@@ -351,9 +351,9 @@ const statusReseller = isReseller ? 'Reseller' : 'Bukan Reseller';
   const latency = (Math.random() * 0.1 + 0.01).toFixed(2);
 
   const messageText = `
-╭─ <b>⚡ BOT VPN ${NAMA_STORE} ⚡</b>
-├ Bot VPN Premium dengan sistem otomatis
-├ Pembelian layanan VPN berkualitas tinggi
+╭─ <b>⚡ BOT ZIVPN UDP ${NAMA_STORE} ⚡</b>
+├ Bot VPN UDP Premium dengan sistem otomatis
+├ Pembelian layanan VPN UDP berkualitas tinggi
 └ Akses internet cepat & aman dengan server terpercaya! 
 
 <b>👋 Hai, Member <code>${userName}</code>!</b>
