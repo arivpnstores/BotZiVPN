@@ -40,13 +40,7 @@ if (!/^[a-z0-9-]+$/.test(username)) {
         return resolve(`❌ ${d.message}`);
       }
 
-      // UPDATE total renew akun (opsional)
-      if (exp >= 1 && exp <= 135) {
-        db.run(
-          'UPDATE Server SET total_create_akun = total_create_akun + 1 WHERE id = ?',
-          [serverId]
-        );
-      }
+
 
       const msg = `${d.message}`;
 

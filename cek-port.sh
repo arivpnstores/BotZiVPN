@@ -3,6 +3,11 @@
 # Daftar server (ubah sesuai kebutuhan)
 servers=(
   "biznet.rajaserverpremium.web.id"
+  "biznet2.rajaserverpremium.web.id"
+  "biznet3.rajaserverpremium.web.id"
+  "biznet4.rajaserverpremium.web.id"
+  "biznet5.rajaserverpremium.web.id"
+  "ikd.rajaserverpremium.web.id"
 )
 
 # Daftar port + label

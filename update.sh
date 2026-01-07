@@ -104,7 +104,7 @@ EOF
 cat >/etc/cron.d/backup_sellzivpn <<'EOF'
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-0 * * * * root /usr/bin/backup_sellzivpn
+0 0 * * * root /usr/bin/backup_sellzivpn
 EOF
 
 chmod +x /usr/bin/backup_sellzivpn
