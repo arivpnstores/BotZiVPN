@@ -386,9 +386,6 @@ Status: <code>${statusReseller}</code>
 ──────────────────────────`;
 
 let keyboard;
-
-if (isReseller) {
-  // Keyboard untuk reseller (boleh ditambah tombol khusus reseller)
   keyboard = [
     [
       { text: '➕ Buat Akun', callback_data: 'service_create' },
@@ -401,25 +398,11 @@ if (isReseller) {
     [
      { text: '⌛ Trial Akun', callback_data: 'service_trial' },
       { text: '💰 TopUp Saldo', callback_data: 'topup_saldo' }
-    ]
-  ];
-} else {
-  // Keyboard untuk buyer
-  keyboard = [
-    [
-      { text: '➕ Buat Akun', callback_data: 'service_create' },
-      { text: '♻️ Perpanjang Akun', callback_data: 'service_renew' }
-    ],
-    [
-      { text: '⌛ Trial Akun', callback_data: 'service_trial' },
-      { text: '💰 TopUp Saldo', callback_data: 'topup_saldo' },
     ],
     [
       { text: '🤝 Jadi Reseller & Dapat Harga Spesial', callback_data: 'jadi_reseller' }
     ]
   ];
-}
-
   try {
     if (ctx.updateType === 'callback_query') {
       try {
@@ -1301,43 +1284,18 @@ const { exec } = require('child_process');
 
 bot.action('cek_service', async (ctx) => {
   try {
-    const resselDbPath = './ressel.db';
-    const idUser = ctx.from.id.toString().trim();
+    const message = await ctx.reply('⏳ Sedang mengecek status server...');
 
-    // 🔍 Cek apakah user termasuk reseller
-    fs.readFile(resselDbPath, 'utf8', async (err, data) => {
-      if (err) {
-        console.error('❌ Gagal membaca file ressel.db:', err.message);
-        return ctx.reply('❌ *Terjadi kesalahan saat membaca data reseller.*', { parse_mode: 'Markdown' });
+    exec('chmod +x cek-port.sh && bash cek-port.sh', (error, stdout, stderr) => {
+      if (error) {
+        console.error(error);
+        return ctx.reply('❌ Terjadi kesalahan saat menjalankan pengecekan.');
       }
 
-      const resselList = data.split('\n').map(line => line.trim()).filter(Boolean);
-      const isRessel = resselList.includes(idUser);
+      const cleanOutput = stdout.replace(/\x1b\[[0-9;]*m/g, '');
 
-      if (!isRessel) {
-        return ctx.reply('❌ *Fitur ini hanya untuk Ressel VPN.*', { parse_mode: 'Markdown' });
-      }
-
-      // ✅ Jika reseller, lanjut jalankan cek service
-      const message = await ctx.reply('⏳ Sedang mengecek status server...');
-
-      exec('chmod +x cek-port.sh && bash cek-port.sh', (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Gagal menjalankan skrip: ${error}`);
-          return ctx.reply('❌ Terjadi kesalahan saat menjalankan pengecekan.');
-        }
-
-        if (stderr) {
-          console.error(`Error dari skrip: ${stderr}`);
-          return ctx.reply('❌ Ada output error dari skrip pengecekan.');
-        }
-
-        // Bersihkan kode warna ANSI agar output rapi
-        const cleanOutput = stdout.replace(/\x1b\[[0-9;]*m/g, '');
-
-        ctx.reply(`📡 *Hasil Cek Port:*\n\n\`\`\`\n${cleanOutput}\n\`\`\``, {
-          parse_mode: 'Markdown'
-        });
+      ctx.reply(`📡 *Hasil Cek Port:*\n\n\`\`\`\n${cleanOutput}\n\`\`\``, {
+        parse_mode: 'Markdown'
       });
     });
   } catch (err) {
@@ -3397,22 +3355,32 @@ const qrBuffer = Buffer.from(qrResponse.data);
   }
 }
 
-// ===== CEK STATUS BY AMOUNT (GATEWAY) =====
+// ===== CEK STATUS BY AMOUNT (GATEWAY) - PREMIUM + LOG =====
 async function cekStatusAmountGateway(amount) {
-  const url = 'http://api.rajaserverpremium.web.id/orderkuota/cekstatus';
+  const url = `http://api.rajaserverpremium.web.id/orderkuota/cekstatus?apikey=${APIKEY}&auth_username=${AUTH_USER}&auth_token=${AUTH_TOKEN}&web_mutasi=${WEB_MUTASI}&amount=${amount}`;
 
-  const res = await axios.get(url, {
-    params: {
-      apikey: APIKEY,
-      auth_username: AUTH_USER,
-      auth_token: AUTH_TOKEN,
-      web_mutasi: WEB_MUTASI,
-      amount: amount
-    },
-    timeout: 20000
-  });
+  for (let i = 0; i < 3; i++) {
+    try {
+      logger.info(`[QRIS] Cek status amount=${amount} try=${i+1}`);
+      const res = await axios.get(url, { timeout: 20000 });
+      logger.info(`[QRIS] Gateway OK amount=${amount} => state=${res.data?.payment?.state || '-'}`);
+      return res.data;
+    } catch (err) {
+      const status = err?.response?.status;
+      logger.error(`[QRIS] Gateway ERROR amount=${amount} try=${i+1} | status=${status || '-'} code=${err.code || '-'} msg=${err.message}`);
 
-  return res.data; // { status, creator, payment:{state,amount}, result:[] }
+      // 502/503/504 = biasanya sementara, retry pakai backoff
+      if ([502, 503, 504].includes(status)) {
+        await new Promise(r => setTimeout(r, 500 * (i + 1)));
+        continue;
+      }
+
+      // selain itu langsung stop (misal 401/403 dll)
+      break;
+    }
+  }
+
+  return { status: 'error', payment: { state: 'unknown', amount }, result: [] };
 }
 
 // ===== LOOP CEK QRIS =====
