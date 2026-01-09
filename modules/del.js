@@ -6,10 +6,11 @@ const db = new sqlite3.Database('./sellzivpn.db');
 async function delssh(username, password, exp, iplimit, serverId) {
   console.log(`Delete SSH account for ${username} with expiry ${exp} days, IP limit ${iplimit}, and password ${password}`);
 
-  // Validasi username
-if (!/^[a-z0-9-]+$/.test(username)) {
-    return '❌ Username tidak valid. Mohon gunakan hanya huruf dan angka tanpa spasi.';
-  }
+// Validasi username
+if (!/^[a-zA-Z0-9-]+$/.test(username)) {
+  return '❌ Username tidak valid. Gunakan huruf (A–Z / a–z), angka, dan tanda strip (-) tanpa spasi.';
+}
+
 
   return new Promise((resolve) => {
     db.get('SELECT * FROM Server WHERE id = ?', [serverId], (err, server) => {

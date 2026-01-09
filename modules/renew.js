@@ -6,10 +6,11 @@ const db = new sqlite3.Database('./sellzivpn.db');
 async function renewssh(username, password, exp, limitip, serverId) {
   console.log(`Renewing SSH account for ${username} with expiry ${exp} days, limit IP ${limitip} on server ${serverId}`);
 
-  // Validasi username
-if (!/^[a-z0-9-]+$/.test(username)) {
-    return '❌ Username tidak valid. Mohon gunakan hanya huruf dan angka tanpa spasi.';
-  }
+// Validasi username
+if (!/^[a-zA-Z0-9-]+$/.test(username)) {
+  return '❌ Username tidak valid. Gunakan huruf (A–Z / a–z), angka, dan tanda strip (-) tanpa spasi.';
+}
+
 
   return new Promise((resolve) => {
     db.get('SELECT * FROM Server WHERE id = ?', [serverId], (err, server) => {
@@ -40,9 +41,17 @@ if (!/^[a-z0-9-]+$/.test(username)) {
         return resolve(`❌ ${d.message}`);
       }
 
+      const msg = `${d.message}
 
+📘 *TUTORIAL PASANG ZIVPN*
+📂 Google Drive:
+https://drive.google.com/file/d/1BAPWA4ejDsq0IcXxJt72GfjD4224iDpI/view?usp=sharing)
 
-      const msg = `${d.message}`;
+📌 *Langkah Singkat:*
+1️⃣ Buka link di atas  
+2️⃣ Ikuti panduan di dalam video
+3️⃣ Selesai & Connect 🚀  
+`;
 
         return resolve(msg);
       });
