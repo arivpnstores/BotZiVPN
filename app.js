@@ -1592,12 +1592,7 @@ await bot.telegram.sendMessage(
 ━━━━━━━━━━━━━━━━━━━━
 </blockquote>`,
   { parse_mode: 'HTML' }
-    );
-  } catch (err) {
-    // ❗️INI KUNCI: gagal kirim grup ≠ gagal create akun
-    logger.warn(`Gagal kirim notif ke grup: ${err.message}`);
-  }
-}
+       );
 
     const trialFunctions = {
       ssh: trialssh
@@ -1808,12 +1803,7 @@ await bot.telegram.sendMessage(
 ━━━━━━━━━━━━━━━━━━━━
 </blockquote>`,
   { parse_mode: 'HTML' }
-    );
-  } catch (err) {
-    // ❗️INI KUNCI: gagal kirim grup ≠ gagal create akun
-    logger.warn(`Gagal kirim notif ke grup: ${err.message}`);
-  }
-}
+       );
           } else if (action === 'renew') {
             if (type === 'ssh') {
               msg = await renewssh(username, password, exp, iplimit, serverId);
@@ -1838,12 +1828,7 @@ await bot.telegram.sendMessage(
 ━━━━━━━━━━━━━━━━━━━━
 </blockquote>`,
   { parse_mode: 'HTML' }
-    );
-  } catch (err) {
-    // ❗️INI KUNCI: gagal kirim grup ≠ gagal create akun
-    logger.warn(`Gagal kirim notif ke grup: ${err.message}`);
-  }
-}
+       );
 }
 //SALDO DATABES
 // setelah bikin akun (create/renew), kita cek hasilnya
