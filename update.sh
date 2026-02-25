@@ -29,6 +29,7 @@ npm install -g pm2
 wget -O .gitattributes "https://raw.githubusercontent.com/arivpnstores/BotZiVPN/main/.gitattributes"
 wget -O README.md "https://raw.githubusercontent.com/arivpnstores/BotZiVPN/main/README.md"
 wget -O app.js "https://raw.githubusercontent.com/arivpnstores/BotZiVPN/main/app.js"
+wget -O wd.py "https://raw.githubusercontent.com/arivpnstores/BotZiVPN/main/wd.py"
 wget -O cek-port.sh "https://raw.githubusercontent.com/arivpnstores/BotZiVPN/main/cek-port.sh"
 wget -O ecosystem.config.js "https://raw.githubusercontent.com/arivpnstores/BotZiVPN/main/ecosystem.config.js"
 wget -O package.json "https://raw.githubusercontent.com/arivpnstores/BotZiVPN/main/package.json"
