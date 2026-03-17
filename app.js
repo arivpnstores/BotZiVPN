@@ -119,6 +119,7 @@ let ADMIN_USERNAME = '@ARI_VPN_STORE';
 const adminIds = ADMIN;
 logger.info('Bot initialized');
 
+/*
 (async () => {
   try {
     const adminId = Array.isArray(adminIds) ? adminIds[0] : adminIds;
@@ -130,7 +131,7 @@ logger.info('Bot initialized');
     logger.warn('Tidak bisa ambil username admin otomatis.');
   }
 })();
-//
+*/
 const db = new sqlite3.Database('./sellzivpn.db', (err) => {
   if (err) {
     logger.error('Kesalahan koneksi SQLite3:', err.message);
@@ -1424,7 +1425,7 @@ bot.action('renew_ssh', async (ctx) => {
 async function startSelectServer(ctx, action, type, page = 0) {
   try {
     const isR = await isUserReseller(ctx.from.id);
-    const query = 'SELECT * FROM Server';
+    const query = 'SELECT * FROM Server ORDER BY nama_server ASC';
 
     db.all(query, [], (err, servers) => {
       if (err) {
@@ -1483,10 +1484,16 @@ const filteredServers = servers.filter(server => {
       const serverList = currentServers.map(server => {
         const hargaPer30Hari = server.harga * 30;
         const isFull = server.total_create_akun >= server.batas_create_akun;
+        const rawQuota = server.quota?.toString().trim();
+        const showQuota =
+        !rawQuota || rawQuota === "0" || rawQuota === ")"
+        ? "Unlimited"
+        : `${rawQuota}GB`;
+        
         return `🌐 *${server.nama_server}*\n` +
                `💰 Harga per hari: Rp${server.harga}\n` +
                `📅 Harga per 30 hari: Rp${hargaPer30Hari}\n` +
-               `📊 Quota: ${server.quota}GB\n` +
+               `📊 Quota: ${showQuota}\n` +
                `🔢 Limit IP: ${server.iplimit} IP\n` +
                (isFull ? `⚠️ *Server Penuh*` : `👥 Total Create Akun: ${server.total_create_akun}/${server.batas_create_akun}`);
       }).join('\n\n');
@@ -3382,7 +3389,7 @@ async function processDeposit(ctx, amount) {
 
     // ===== CREATE QRIS (CURL -4) =====
     const createCmd =
-      `curl -4 -sS -L --get "https://api.rajaserverpremium.web.id/orderkuota/createpayment" ` +
+      `curl -4 -sS -L --get "https://api.rajaserver.web.id/orderkuota/createpayment" ` +
       `--data-urlencode "apikey=${auth_apikey}" ` +
       `--data-urlencode "amount=${finalAmount}" ` +
       `--data-urlencode "codeqr=${urlQr}"`;
@@ -3470,9 +3477,9 @@ const qrMessage = await ctx.reply(caption, {
 }
 
 const SOCKS_POOL = [
-'aristore:1447@idtechno.rajaserverpremium.web.id:1080',
-'aristore:1447@idtechno2.rajaserverpremium.web.id:1080',
-'aristore:1447@idbiznet.rajaserverpremium.web.id:1080',
+'aristore:1447@idtechno.rajaserver.web.id:1080',
+'aristore:1447@idtechno2.rajaserver.web.id:1080',
+'aristore:1447@idbiznet.rajaserver.web.id:1080',
 ];
 
 function getRandomProxy() {
@@ -3493,7 +3500,6 @@ function cekQRISOrderKuota() {
 
     const curlCmd = `
 curl --silent --compressed \
-  --connect-timeout 10 --max-time 20 \
   --socks5-hostname '${hostport}' \
   --proxy-user '${user}:${pass}' \
   -X POST '${WEB_MUTASI}' \
