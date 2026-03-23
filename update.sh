@@ -169,7 +169,7 @@ service cron restart
   \"USER_ID\": \"$adminid\",
   \"NAMA_STORE\": \"$namastore\",
   \"GROUP_ID\": \"$groupid\",
-  \"PORT\": \"6969\",
+  \"PORT\": \"7979\",
   \"DATA_QRIS\": \"$dataqris\",
   \"MERCHANT_ID\": \"$MERCHANT_ID\",
   \"GOPAY_KEY\": \"$GOPAY_KEY\",
