@@ -1425,7 +1425,7 @@ bot.action('renew_ssh', async (ctx) => {
 async function startSelectServer(ctx, action, type, page = 0) {
   try {
     const isR = await isUserReseller(ctx.from.id);
-    const query = 'SELECT * FROM Server ORDER BY nama_server ASC';
+    const query = 'SELECT * FROM Server';
 
     db.all(query, [], (err, servers) => {
       if (err) {
@@ -1434,24 +1434,25 @@ async function startSelectServer(ctx, action, type, page = 0) {
       }
 
       // ==== FILTER RESSELLER-ONLY ====
-const filteredServers = servers.filter(server => {
-  const isResellerOnly = Number(server.is_reseller_only) === 1;
+      let filteredServers = servers.filter(server => {
+        const isResellerOnly = Number(server.is_reseller_only) === 1;
 
-  // Jika server hanya untuk reseller
-  if (isResellerOnly && !isR) {
-    logger.info(`Menyembunyikan server ${server.nama_server} untuk user biasa ${ctx.from.id}`);
-    return false;
-  }
+        // Jika server hanya untuk reseller
+        if (isResellerOnly && !isR) return false;
 
-  // Jika server publik dan user adalah reseller (optional: sembunyikan server publik untuk reseller)
-  if (!isResellerOnly && isR) {
-    logger.info(`Menyembunyikan server publik ${server.nama_server} untuk reseller ${ctx.from.id}`);
-    return false;
-  }
+        // Jika server publik dan user adalah reseller (opsional)
+        if (!isResellerOnly && isR) return false;
 
-  return true;
-});
+        return true;
+      });
 
+      // ==== SORT SERVER TERSEDIA DI DEPAN, PENUH DI BELAKANG ====
+      filteredServers.sort((a, b) => {
+        const aFull = a.total_create_akun >= a.batas_create_akun ? 1 : 0;
+        const bFull = b.total_create_akun >= b.batas_create_akun ? 1 : 0;
+        if (aFull !== bFull) return aFull - bFull; // server penuh terakhir
+        return a.nama_server.localeCompare(b.nama_server); // urut alfabet kalau status sama
+      });
 
       logger.info(`User ${ctx.from.id} melihat ${filteredServers.length} server dari ${servers.length} total`);
 
@@ -1486,10 +1487,10 @@ const filteredServers = servers.filter(server => {
         const isFull = server.total_create_akun >= server.batas_create_akun;
         const rawQuota = server.quota?.toString().trim();
         const showQuota =
-        !rawQuota || rawQuota === "0" || rawQuota === ")"
-        ? "Unlimited"
-        : `${rawQuota}GB`;
-        
+          !rawQuota || rawQuota === "0" || rawQuota === ")"
+            ? "Unlimited"
+            : `${rawQuota}GB`;
+
         return `🌐 *${server.nama_server}*\n` +
                `💰 Harga per hari: Rp${server.harga}\n` +
                `📅 Harga per 30 hari: Rp${hargaPer30Hari}\n` +
